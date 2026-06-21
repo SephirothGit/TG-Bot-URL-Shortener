@@ -51,11 +51,11 @@ func (s *LinkService) GetAllLinks(ctx context.Context) ([]*models.Link, error) {
 }
 
 func (s *LinkService) GetByCode(ctx context.Context, code string) (*models.Link, error) {
-	links, err := s.repo.GetByCode(ctx, code)
+	link, err := s.repo.GetByCode(ctx, code)
 	if err != nil {
 		return nil, err
 	}
-	return links, nil
+	return link, nil
 }
 func (s *LinkService) DeleteLink(ctx context.Context, code string) error {
 	err := s.repo.Delete(ctx, code)
