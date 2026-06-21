@@ -56,13 +56,29 @@ func (r *PostgresLinkRepo) GetAll(ctx context.Context) ([]*models.Link, error) {
 }
 
 func (r *PostgresLinkRepo) GetByCode(ctx context.Context, code string) (*models.Link, error) {
-	return nil, nil
+
+	link := &models.Link{}
+
+	err := r.db.QueryRowContext(ctx, "SELECT id, original_url, short_code, clicks, created_at FROM links WHERE short_code = $1", code).Scan(&link.ID, &link.OriginalURL, &link.ShortCode, &link.Clicks, &link.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return link, nil
 }
 
 func (r *PostgresLinkRepo) Delete(ctx context.Context, code string) error {
+	_, err := r.db.ExecContext(ctx, "DELETE FROM links WHERE short_code = $1", code)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (r *PostgresLinkRepo) IncrementClicks(ctx context.Context, code string) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE links SET clicks = clicks + 1 WHERE short_code = $1", code)
+	if err != nil {
+		return err
+	}
 	return nil
 }
