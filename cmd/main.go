@@ -6,9 +6,14 @@ import (
 	"API/internal/router"
 	"log"
 	"net/http"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	godotenv.Load()
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal("error loading config")
@@ -22,6 +27,8 @@ func main() {
 
 	mux := router.SetupRoutes(db)
 	log.Printf("Server started on %s", cfg.ServerAddr)
-	http.ListenAndServe(cfg.ServerAddr, mux)
+	if err := http.ListenAndServe(cfg.ServerAddr, mux); err != nil {
+		log.Fatal(err)
+	}
 
 }

@@ -23,7 +23,7 @@ func NewPostgresLinkRepo(db *sql.DB) LinkRepository {
 }
 
 func (r *PostgresLinkRepo) Create(ctx context.Context, link *models.Link) error {
-	err := r.db.QueryRowContext(ctx, "INSERT INTO links VALUES ($1, $2) RETURNING id, created_at",
+	err := r.db.QueryRowContext(ctx, "INSERT INTO links (original_url, short_code, clicks, created_at) VALUES ($1, $2, 0, NOW()) RETURNING id, created_at",
 		link.OriginalURL, link.ShortCode).Scan(&link.ID, &link.CreatedAt)
 	if err != nil {
 		return err
