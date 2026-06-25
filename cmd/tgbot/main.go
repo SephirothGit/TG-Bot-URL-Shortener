@@ -29,6 +29,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	bot.Handle("/start", func(c telebot.Context) error {
+		return c.Send("Hello! I am a URL shortener, here you can paste the link and receive a short version of it")
+	})
+
 	bot.Handle(telebot.OnText, func(c telebot.Context) error {
 		url := c.Text()
 		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
