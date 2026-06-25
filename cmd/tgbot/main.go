@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -19,7 +20,7 @@ type createResponse struct {
 func main() {
 
 	bot, err := telebot.NewBot(telebot.Settings{
-		Token:  "8941887985:AAHIejP8u_l2ahgqjf_EFahdrHJsq6x8Ziw",
+		Token:  os.Getenv("TELEGRAM_TOKEN"),
 		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
