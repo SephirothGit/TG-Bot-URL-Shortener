@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
 	"gopkg.in/telebot.v3"
 )
 
@@ -18,6 +19,7 @@ type createResponse struct {
 }
 
 func main() {
+	godotenv.Load()
 
 	bot, err := telebot.NewBot(telebot.Settings{
 		Token:  os.Getenv("TELEGRAM_TOKEN"),
@@ -29,6 +31,10 @@ func main() {
 
 	bot.Handle(telebot.OnText, func(c telebot.Context) error {
 		url := c.Text()
+		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+			return c.Send("invalid link")
+		}
+
 		body := strings.NewReader(`{"original_url": "` + url + `"}`)
 
 		resp, err := http.Post("http://localhost:8080/api/v1/links", "application/json", body)
