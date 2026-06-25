@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,6 +19,14 @@ type createResponse struct {
 	} `json:"data"`
 }
 
+type linksResponse struct {
+	Data []struct {
+		OriginalURL string `json:"original_url"`
+		ShortCode   string `json:"short_code"`
+		Clicks      int    `json:"clicks"`
+	} `json:"data"`
+}
+
 func main() {
 	godotenv.Load()
 
@@ -31,6 +40,23 @@ func main() {
 
 	bot.Handle("/start", func(c telebot.Context) error {
 		return c.Send("Hello! I am a URL shortener, here you can paste the link and receive a short version of it")
+	})
+
+	bot.Handle("/list", func(c telebot.Context) error {
+		resp, err := http.Get("http://localhost:8080/api/v1/links")
+		if err != nil {
+			return err
+		}
+
+		var result linksResponse
+		json.NewDecoder(resp.Body).Decode(&result)
+
+		var message string
+		for _, link := range result.Data {
+			message += fmt.Sprintf("%s http://localhost:8080/%s (%d clicks)\n", link.OriginalURL, link.ShortCode, link.Clicks)
+		}
+
+		return c.Send(message)
 	})
 
 	bot.Handle(telebot.OnText, func(c telebot.Context) error {
