@@ -18,6 +18,14 @@ type createResponse struct {
 	} `json:"data"`
 }
 
+type linkResponse struct {
+	Data struct {
+		OriginalURL string `json:"original_url"`
+		ShortCode   string `json:"short_code"`
+		Clicks      int    `json:"clicks"`
+	} `json:"data"`
+}
+
 type linksResponse struct {
 	Data []struct {
 		OriginalURL string `json:"original_url"`
@@ -61,6 +69,24 @@ func main() {
 			return err
 		}
 		return c.Send("link deleted")
+	})
+
+	bot.Handle("/stats", func(c telebot.Context) error {
+		args := c.Args()
+		if len(args) == 0 {
+			return c.Send("write a code")
+		}
+
+		code := args[0]
+		resp, err := http.Get("http://localhost:8080/api/v1/links/" + code)
+		if err != nil {
+			return err
+		}
+
+		var result linkResponse
+		json.NewDecoder(resp.Body).Decode(&result)
+
+		return c.Send(fmt.Sprintf("URL: %s, Code: %s, Clicks: %d", result.Data.OriginalURL, result.Data.ShortCode, result.Data.Clicks))
 	})
 
 	bot.Handle("/list", func(c telebot.Context) error {

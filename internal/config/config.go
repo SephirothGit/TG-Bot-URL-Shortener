@@ -6,8 +6,8 @@ import (
 )
 
 type Config struct {
-	DatabaseURL string
-	ServerAddr  string
+	DatabaseURL   string
+	ServerAddr    string
 	TelegramToken string
 }
 
