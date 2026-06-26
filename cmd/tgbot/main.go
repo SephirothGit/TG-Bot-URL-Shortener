@@ -1,15 +1,14 @@
 package main
 
 import (
+	"API/internal/config"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
-	"github.com/joho/godotenv"
 	"gopkg.in/telebot.v3"
 )
 
@@ -28,17 +27,19 @@ type linksResponse struct {
 }
 
 func main() {
-	godotenv.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	bot, err := telebot.NewBot(telebot.Settings{
-		Token:  os.Getenv("TELEGRAM_TOKEN"),
+		Token:  cfg.TelegramToken,
 		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	
 	bot.Handle("/start", func(c telebot.Context) error {
 		return c.Send("Hello! I am a URL shortener, here you can paste the link and receive a short version of it")
 	})
@@ -61,8 +62,6 @@ func main() {
 		}
 		return c.Send("link deleted")
 	})
-		
-
 
 	bot.Handle("/list", func(c telebot.Context) error {
 		resp, err := http.Get("http://localhost:8080/api/v1/links")

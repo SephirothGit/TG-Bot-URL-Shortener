@@ -8,6 +8,7 @@ import (
 type Config struct {
 	DatabaseURL string
 	ServerAddr  string
+	TelegramToken string
 }
 
 func Load() (*Config, error) {
@@ -22,5 +23,10 @@ func Load() (*Config, error) {
 		serverAddr = ":8080"
 	}
 
-	return &Config{DatabaseURL: dbURL, ServerAddr: serverAddr}, nil
+	telegramToken := os.Getenv("TELEGRAM_TOKEN")
+	if telegramToken == "" {
+		return nil, fmt.Errorf("TELEGRAM_TOKEN is required")
+	}
+
+	return &Config{DatabaseURL: dbURL, ServerAddr: serverAddr, TelegramToken: telegramToken}, nil
 }
