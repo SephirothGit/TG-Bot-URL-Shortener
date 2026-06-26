@@ -38,9 +38,31 @@ func main() {
 		log.Fatal(err)
 	}
 
+	
 	bot.Handle("/start", func(c telebot.Context) error {
 		return c.Send("Hello! I am a URL shortener, here you can paste the link and receive a short version of it")
 	})
+
+	bot.Handle("/delete", func(c telebot.Context) error {
+		args := c.Args()
+		if len(args) == 0 {
+			return c.Send("write links code")
+		}
+
+		code := args[0]
+		req, err := http.NewRequest("DELETE", "http://localhost:8080/api/v1/links/"+code, nil)
+		if err != nil {
+			return err
+		}
+
+		_, err = http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+		return c.Send("link deleted")
+	})
+		
+
 
 	bot.Handle("/list", func(c telebot.Context) error {
 		resp, err := http.Get("http://localhost:8080/api/v1/links")
