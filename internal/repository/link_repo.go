@@ -8,9 +8,9 @@ import (
 
 type LinkRepository interface {
 	Create(ctx context.Context, link *models.Link) error
-	GetAll(ctx context.Context) ([]*models.Link, error)
+	GetAll(ctx context.Context, telegramID int64) ([]*models.Link, error)
 	GetByCode(ctx context.Context, code string) (*models.Link, error)
-	Delete(ctx context.Context, code string) error
+	Delete(ctx context.Context, code string, telegramID int64) error
 	IncrementClicks(ctx context.Context, code string) error
 }
 
@@ -23,16 +23,16 @@ func NewPostgresLinkRepo(db *sql.DB) LinkRepository {
 }
 
 func (r *PostgresLinkRepo) Create(ctx context.Context, link *models.Link) error {
-	err := r.db.QueryRowContext(ctx, "INSERT INTO links (original_url, short_code, clicks, created_at) VALUES ($1, $2, 0, NOW()) RETURNING id, created_at",
-		link.OriginalURL, link.ShortCode).Scan(&link.ID, &link.CreatedAt)
+	err := r.db.QueryRowContext(ctx, "INSERT INTO links (original_url, short_code, clicks, created_at, telegram_id) VALUES ($1, $2, 0, NOW(), $3) RETURNING id, created_at",
+		link.OriginalURL, link.ShortCode, link.TelegramID).Scan(&link.ID, &link.CreatedAt)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *PostgresLinkRepo) GetAll(ctx context.Context) ([]*models.Link, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT id, original_url, short_code, clicks, created_at FROM links")
+func (r *PostgresLinkRepo) GetAll(ctx context.Context, telegramID int64) ([]*models.Link, error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT id, original_url, short_code, clicks, created_at FROM links WHERE telegram_id = $1", telegramID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +67,8 @@ func (r *PostgresLinkRepo) GetByCode(ctx context.Context, code string) (*models.
 	return link, nil
 }
 
-func (r *PostgresLinkRepo) Delete(ctx context.Context, code string) error {
-	_, err := r.db.ExecContext(ctx, "DELETE FROM links WHERE short_code = $1", code)
+func (r *PostgresLinkRepo) Delete(ctx context.Context, code string, telegramID int64) error {
+	_, err := r.db.ExecContext(ctx, "DELETE FROM links WHERE short_code = $1 AND telegram_id = $2", code, telegramID)
 	if err != nil {
 		return err
 	}

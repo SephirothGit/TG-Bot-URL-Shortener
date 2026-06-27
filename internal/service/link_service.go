@@ -26,7 +26,7 @@ func generateCode() string {
 	return string(code)
 }
 
-func (s *LinkService) CreateLink(ctx context.Context, original_url string) (*models.Link, error) {
+func (s *LinkService) CreateLink(ctx context.Context, original_url string, telegramID int64) (*models.Link, error) {
 	if original_url == "" {
 		return nil, fmt.Errorf("url is required")
 	}
@@ -34,6 +34,7 @@ func (s *LinkService) CreateLink(ctx context.Context, original_url string) (*mod
 	link := &models.Link{
 		OriginalURL: original_url,
 		ShortCode:   generateCode(),
+		TelegramID: telegramID,
 	}
 
 	if err := s.repo.Create(ctx, link); err != nil {
@@ -42,8 +43,8 @@ func (s *LinkService) CreateLink(ctx context.Context, original_url string) (*mod
 	return link, nil
 }
 
-func (s *LinkService) GetAllLinks(ctx context.Context) ([]*models.Link, error) {
-	links, err := s.repo.GetAll(ctx)
+func (s *LinkService) GetAllLinks(ctx context.Context, telegramID int64) ([]*models.Link, error) {
+	links, err := s.repo.GetAll(ctx, telegramID)
 	if err != nil {
 		return nil, err
 	}
@@ -57,8 +58,8 @@ func (s *LinkService) GetByCode(ctx context.Context, code string) (*models.Link,
 	}
 	return link, nil
 }
-func (s *LinkService) DeleteLink(ctx context.Context, code string) error {
-	err := s.repo.Delete(ctx, code)
+func (s *LinkService) DeleteLink(ctx context.Context, code string, telegramID int64) error {
+	err := s.repo.Delete(ctx, code, telegramID)
 	if err != nil {
 		return err
 	}

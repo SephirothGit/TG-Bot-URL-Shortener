@@ -36,7 +36,7 @@ func (h *LinkHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := h.service.CreateLink(r.Context(), req.OriginalURL)
+	link, err := h.service.CreateLink(r.Context(), req.OriginalURL, telegramID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -48,7 +48,7 @@ func (h *LinkHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LinkHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	links, err := h.service.GetAllLinks(r.Context())
+	links, err := h.service.GetAllLinks(r.Context(), telegramID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -76,7 +76,7 @@ func (h *LinkHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	code := r.PathValue("code")
 
-	err := h.service.DeleteLink(r.Context(), code)
+	err := h.service.DeleteLink(r.Context(), code, telegramID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
