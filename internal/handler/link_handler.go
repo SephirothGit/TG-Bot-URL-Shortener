@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"API/internal/middleware"
 	"API/internal/models"
 	"API/internal/service"
 	"encoding/json"
@@ -28,6 +29,13 @@ type LinksResponse struct {
 }
 
 func (h *LinkHandler) Create(w http.ResponseWriter, r *http.Request) {
+
+	telegramID, ok := middleware.GetTelegramID(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	var req CreateLinkRequest
 
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -48,6 +56,13 @@ func (h *LinkHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LinkHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+
+	telegramID, ok := middleware.GetTelegramID(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	links, err := h.service.GetAllLinks(r.Context(), telegramID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -73,6 +88,12 @@ func (h *LinkHandler) GetByCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LinkHandler) Delete(w http.ResponseWriter, r *http.Request) {
+
+	telegramID, ok := middleware.GetTelegramID(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	code := r.PathValue("code")
 

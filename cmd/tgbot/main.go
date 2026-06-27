@@ -34,6 +34,22 @@ type linksResponse struct {
 	} `json:"data"`
 }
 
+func newAuthRequest(method, url, token string, body *strings.Reader) (*http.Request, error) {
+	var req *http.Request
+	var err error
+	if body != nil {
+		req, err = http.NewRequest(method, url, body)
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+	}
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+	return req, nil
+}
+
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -48,7 +64,24 @@ func main() {
 		log.Fatal(err)
 	}
 
+	tokens := make(map[int64]string)
+
 	bot.Handle("/start", func(c telebot.Context) error {
+		userID := c.Sender().ID
+
+		body := strings.NewReader(fmt.Sprintf(`{"telegram_id": %d}`, userID))
+		resp, err := http.Post("http://localhost:8080/auth/telegram", "application/json", body)
+		if err != nil {
+			return err
+		}
+
+		var result struct {
+			Token string `json:"token"`
+		}
+		json.NewDecoder(resp.Body).Decode(&result)
+
+		tokens[int64(userID)] = result.Token
+
 		return c.Send("Hello! I am a URL shortener, here you can paste the link and receive a short version of it")
 	})
 
@@ -58,8 +91,9 @@ func main() {
 			return c.Send("write links code")
 		}
 
+		token := tokens[int64(c.Sender().ID)]
 		code := args[0]
-		req, err := http.NewRequest("DELETE", "http://localhost:8080/api/v1/links/"+code, nil)
+		req, err := newAuthRequest("DELETE", "http://localhost:8080/api/v1/links/"+code, token, nil)
 		if err != nil {
 			return err
 		}
@@ -90,7 +124,14 @@ func main() {
 	})
 
 	bot.Handle("/list", func(c telebot.Context) error {
-		resp, err := http.Get("http://localhost:8080/api/v1/links")
+		token := tokens[int64(c.Sender().ID)]
+
+		req, err := newAuthRequest("GET", "http://localhost:8080/api/v1/links", token, nil)
+		if err != nil {
+			return err
+		}
+
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return err
 		}
@@ -114,7 +155,12 @@ func main() {
 
 		body := strings.NewReader(`{"original_url": "` + url + `"}`)
 
-		resp, err := http.Post("http://localhost:8080/api/v1/links", "application/json", body)
+		token := tokens[int64(c.Sender().ID)]
+		req, err := newAuthRequest("POST", "http://localhost:8080/api/v1/links", token, body)
+		if err != nil {
+			return err
+		}
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return err
 		}

@@ -30,6 +30,7 @@ func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid json", http.StatusBadRequest)
 		return
 	}
+
 	claims := jwt.MapClaims{
 		"telegram_id": req.TelegramID,
 		"exp":         time.Now().Add(24 * time.Hour).Unix(),
@@ -39,6 +40,7 @@ func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	tokenString, err := token.SignedString([]byte(h.secret))
 	if err != nil {
 		http.Error(w, "failed to create token", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
