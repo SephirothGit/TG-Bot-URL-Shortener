@@ -6,6 +6,7 @@ REST API for shortening URLs with a Telegram bot interface, built with Go and Po
 
 - **Go** — backend
 - **PostgreSQL** — storage
+- **JWT** — authentication
 - **Telegram Bot** — client interface
 
 ## Getting Started
@@ -17,13 +18,19 @@ REST API for shortening URLs with a Telegram bot interface, built with Go and Po
 
 ## API
 
+### Public
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/auth/telegram` | Get JWT token |
+| `GET` | `/api/v1/links/{code}` | Get link info |
+| `GET` | `/{code}` | Redirect to original URL |
+
+### Protected (requires JWT)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/v1/links` | Create short link |
-| `GET` | `/api/v1/links` | Get all links |
-| `GET` | `/api/v1/links/{code}` | Get link by code |
+| `GET` | `/api/v1/links` | Get your links |
 | `DELETE` | `/api/v1/links/{code}` | Delete link |
-| `GET` | `/{code}` | Redirect to original URL |
 
 ## Environment Variables
 
@@ -31,11 +38,15 @@ REST API for shortening URLs with a Telegram bot interface, built with Go and Po
 DATABASE_URL=postgres://user:password@localhost:5432/urlshortener?sslmode=disable
 SERVER_ADDR=:8080
 TELEGRAM_TOKEN=your_telegram_bot_token
+JWT_SECRET=your_secret_key
 ```
 
 ## Bot Commands
 
 | Command | Description |
 |---------|-------------|
-| `/start` | Welcome message |
+| `/start` | Register and get started |
+| `/list` | Show your links |
+| `/delete {code}` | Delete a link |
+| `/stats {code}` | Show link statistics |
 | Send any URL | Returns shortened link |
