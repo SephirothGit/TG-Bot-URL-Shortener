@@ -6,8 +6,9 @@ REST API for shortening URLs with a Telegram bot interface, built with Go and Po
 
 - **Go** — backend
 - **PostgreSQL** — storage
-- **JWT** — authentication
 - **Telegram Bot** — client interface
+- **JWT** — authentication
+- **Rate Limiting** — 3 req/sec per IP (token bucket algorithm)
 
 ## Getting Started
 
