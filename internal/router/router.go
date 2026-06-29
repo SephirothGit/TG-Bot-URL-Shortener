@@ -9,8 +9,9 @@ import (
 	"net/http"
 )
 
-func SetupRoutes(db *sql.DB, secret string) *http.ServeMux {
+func SetupRoutes(db *sql.DB, secret string) http.Handler {
 	authHandler := handler.NewAuthHandler(secret)
+	rateLimiter := middleware.NewRateLimiter(3, 5)
 	authMiddleware := middleware.NewAuthMiddleware(secret)
 	linkRepo := repository.NewPostgresLinkRepo(db)
 	linkService := service.NewLinkService(linkRepo)
@@ -24,5 +25,5 @@ func SetupRoutes(db *sql.DB, secret string) *http.ServeMux {
 	mux.Handle("DELETE /api/v1/links/{code}", authMiddleware.Require(http.HandlerFunc(linkHandler.Delete)))
 	mux.HandleFunc("GET /{code}", linkHandler.Redirect)
 
-	return mux
+	return rateLimiter.Limit(mux)
 }

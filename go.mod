@@ -10,3 +10,5 @@ require (
 require gopkg.in/telebot.v3 v3.3.8
 
 require github.com/golang-jwt/jwt/v5 v5.3.1
+
+require golang.org/x/time v0.15.0
